@@ -1,0 +1,8 @@
+/.settings/
+/.gradle/
+/bin/
+/build/
+/.classpath
+/.project
+/auth.txt
+/players.txt

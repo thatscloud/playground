@@ -1,0 +1,18 @@
+﻿body {
+    background-color: #FFFFFF;
+    color: #333333;
+    font-size: 1.3em;
+}
+
+table th:nth-child(3),
+table td:nth-child(3),
+table th:nth-child(6),
+table td:nth-child(6),
+table th:nth-child(9),
+table td:nth-child(9) {
+    border-right: 1px solid #E1E1E1;
+}
+
+th, td {
+    padding: 12px 10px; 
+}
