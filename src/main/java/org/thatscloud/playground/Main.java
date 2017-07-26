@@ -301,7 +301,7 @@ public class Main
                     {
                         try
                         {
-                            players.add(
+                            final Player player =
                                 ClientBuilder.newClient()
                                     .property( FEATURE_AUTO_DISCOVERY_DISABLE, true )
                                     .property( JSON_PROCESSING_FEATURE_DISABLE, true )
@@ -318,7 +318,15 @@ public class Main
                                     .path( playerName )
                                     .request()
                                     .header( "TRN-Api-Key", apiKey )
-                                    .get( Player.class ) );
+                                    .get( Player.class );
+                            if( player.get( "error" ) != null )
+                            {
+                                theLogger.error(
+                                    "Error in REST call for player \"" + playerName + "\": " +
+                                    player.get( "message" ) );
+                                continue;
+                            }
+                            players.add( player );
                             theLogger.info(
                                 "Succesfully updated player \"" + playerName + "\"" );
                         }
