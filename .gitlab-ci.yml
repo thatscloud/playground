@@ -2,6 +2,7 @@ stages:
   - build
   - test
   - artefact
+  - deploy
 
 cache:
   paths:
@@ -11,11 +12,7 @@ cache:
 build:
   stage: build
   script:
-    - ./gradlew -i -g .gradle assemble
-  artifacts:
-    paths:
-      - build/libs/*.jar
-    expire_in: 1 week
+    - ./gradlew -i -g .gradle classes
 
 test:
   stage: test
@@ -33,5 +30,13 @@ artefact:
       - ./gradlew -i -g .gradle shadowJar
     artifacts:
       paths:
-        - -build/libs/*-all.jar
+        - build/libs/*-all.jar
       expire_in: 1 week
+      
+deploy: 
+    stage: deploy
+    only:
+      - master
+    script:
+      - sudo /opt/deploy-scripts/deploy-playground build/libs/playground-all.jar
+    
