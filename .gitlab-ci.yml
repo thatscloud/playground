@@ -37,6 +37,10 @@ deploy:
     stage: deploy
     only:
       - master
+    dependencies:
+      - artefact
     script:
       - sudo /opt/deploy-scripts/deploy-playground build/libs/playground-all.jar
-    
+    environment:
+      name: production
+      url: $PLAYGROUND_PRODUCTION_URL
