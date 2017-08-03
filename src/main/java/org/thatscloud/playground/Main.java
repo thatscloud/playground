@@ -6,7 +6,6 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 import static org.apache.commons.io.FileUtils.readFileToString;
-import static org.apache.commons.lang3.ObjectUtils.compare;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.glassfish.jersey.CommonProperties.FEATURE_AUTO_DISCOVERY_DISABLE;
 import static org.glassfish.jersey.CommonProperties.JSON_PROCESSING_FEATURE_DISABLE;
@@ -19,7 +18,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
@@ -32,7 +30,6 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.ChronoField;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -387,187 +384,7 @@ public class Main
                     }
 
                     final List<DisplayPlayer> newDisplayPlayers =
-                        players.stream()
-                            .map( p ->
-                            {
-                                long totalKills = 0;
-                                long totalDeaths = 0;
-                                long totalTop10s = 0;
-                                final DisplayPlayer displayPlayer = new DisplayPlayer();
-                                displayPlayer.setPlayerName( p.getPlayerName() );
-                                displayPlayer.setTotalGamesPlayed( 0L );
-                                displayPlayer.setAvatarUrl( p.getAvatarUrl() );
-                                final String defaultSeason = p.getDefaultSeason();
-                                boolean killDeathRatioCalculable = true;
-
-                                for( final GameModeStatistics gms : p.getStatistics() )
-                                {
-                                    if( gms.getRegion().equals( "agg" ) &&
-                                        gms.getSeason().equals( defaultSeason ) )
-                                    {
-                                        Long aggModeKills = null;
-                                        BigDecimal aggModeKdRatio = null;
-                                        Long aggModeGamesPlayed = null;
-                                        Long aggModeWins = null;
-                                        for( final Statistic stat : gms.getStatistics() )
-                                        {
-                                            if( stat.getLabel().equals( "Rating" ) )
-                                            {
-                                                if( gms.getMatch().equals( "solo" ) )
-                                                {
-                                                    displayPlayer
-                                                        .setSoloRating( stat.getValueDecimal() );
-                                                }
-                                                else if( gms.getMatch().equals( "duo" ) )
-                                                {
-                                                    displayPlayer
-                                                        .setDuoRating( stat.getValueDecimal() );
-                                                }
-                                                else if( gms.getMatch().equals( "squad" ) )
-                                                {
-                                                    displayPlayer
-                                                        .setSquadRating( stat.getValueDecimal() );
-                                                }
-                                            }
-                                            if( stat.getLabel().equals( "Kills" ) )
-                                            {
-                                                aggModeKills = stat.getValueInteger();
-                                            }
-                                            if( stat.getLabel().equals( "K/D Ratio" ) )
-                                            {
-                                                aggModeKdRatio = stat.getValueDecimal();
-                                            }
-                                            if( stat.getLabel().equals( "Rounds Played" ) )
-                                            {
-                                                aggModeGamesPlayed = stat.getValueInteger();
-                                            }
-                                            if( stat.getLabel().equals( "Wins" ) )
-                                            {
-                                                aggModeWins = stat.getValueInteger();
-                                            }
-                                            if( stat.getLabel().equals( "Top 10s" ) )
-                                            {
-                                                totalTop10s += stat.getValueInteger();
-                                            }
-                                        }
-                                        if( killDeathRatioCalculable &&
-                                            aggModeKills != null &&
-                                            aggModeKdRatio != null )
-                                        {
-                                            if( BigDecimal.ZERO.compareTo( aggModeKdRatio ) != 0 )
-                                            {
-                                                final long aggModeDeaths =
-                                                    BigDecimal.valueOf( aggModeKills )
-                                                        .divide( aggModeKdRatio,
-                                                                 0,
-                                                                 RoundingMode.HALF_UP )
-                                                        .longValue();
-                                                totalDeaths += aggModeDeaths;
-                                                totalKills += aggModeKills;
-                                            }
-                                            else
-                                            {
-                                                if( aggModeWins != null &&
-                                                    aggModeGamesPlayed != null )
-                                                {
-                                                    // This is not technically true
-                                                    // as it doesn't hold for
-                                                    // duo and squad games, but
-                                                    // it should be close enough for
-                                                    // players without a kill.
-                                                    final long aggModeDeaths =
-                                                        aggModeGamesPlayed - aggModeWins;
-                                                    totalDeaths += aggModeDeaths;
-                                                    totalKills += aggModeKills;
-                                                }
-                                                else
-                                                {
-                                                    killDeathRatioCalculable = false;
-                                                }
-                                            }
-                                        }
-
-                                        displayPlayer.setTotalGamesPlayed(
-                                            displayPlayer.getTotalGamesPlayed() +
-                                            aggModeGamesPlayed );
-                                    }
-                                    if( gms.getRegion().equals( "oc" ) &&
-                                        gms.getSeason().equals( defaultSeason ) )
-                                    {
-                                        for( final Statistic stat : gms.getStatistics() )
-                                        {
-                                            if( stat.getLabel().equals( "Rating" ) )
-                                            {
-                                                if( gms.getMatch().equals( "solo" ) )
-                                                {
-                                                    displayPlayer
-                                                        .setOceaniaSoloRank( stat.getRank() );
-                                                }
-                                                else if( gms.getMatch().equals( "duo" ) )
-                                                {
-                                                    displayPlayer
-                                                        .setOceaniaDuoRank( stat.getRank() );
-                                                }
-                                                else if( gms.getMatch().equals( "squad" ) )
-                                                {
-                                                    displayPlayer
-                                                        .setOceaniaSquadRank( stat.getRank() );
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-
-                                BigDecimal agg = BigDecimal.ONE;
-                                int values = 0;
-                                if( displayPlayer.getSoloRating() != null )
-                                {
-                                    agg = agg.multiply( displayPlayer.getSoloRating() );
-                                    values++;
-                                }
-                                if( displayPlayer.getDuoRating() != null )
-                                {
-                                    agg = agg.multiply( displayPlayer.getDuoRating() );
-                                    values++;
-                                }
-                                if( displayPlayer.getSquadRating() != null )
-                                {
-                                    agg = agg.multiply( displayPlayer.getSquadRating() );
-                                    values++;
-                                }
-                                if( values != 0 )
-                                {
-                                    displayPlayer.setAggregateRating(
-                                        new BigDecimal(
-                                                Math.pow( agg.doubleValue(), 1.0 / values ) )
-                                            .setScale( 2, RoundingMode.HALF_UP ) );
-                                }
-                                if( killDeathRatioCalculable && totalDeaths != 0 )
-                                {
-                                    displayPlayer.setOverallKillDeathRatio(
-                                        BigDecimal.valueOf( totalKills )
-                                            .divide( BigDecimal.valueOf( totalDeaths ),
-                                                     2,
-                                                     RoundingMode.HALF_UP ) );
-                                }
-                                if( displayPlayer.getTotalGamesPlayed() != null &&
-                                    displayPlayer.getTotalGamesPlayed() > 0 )
-                                {
-                                    displayPlayer.setTop10Percentage(
-                                        BigDecimal.valueOf( totalTop10s )
-                                            .divide( BigDecimal.valueOf(
-                                                         displayPlayer.getTotalGamesPlayed() ),
-                                                     4,
-                                                     RoundingMode.HALF_UP ) );
-                                }
-                                return displayPlayer;
-                            } )
-                            .sorted( ( p1, p2 ) -> compare( p1.getPlayerName(),
-                                                            p2.getPlayerName() ) )
-                            .sorted( ( (Comparator<DisplayPlayer>)( p1, p2 ) ->
-                                            compare( p1.getAggregateRating(),
-                                                     p2.getAggregateRating() ) ).reversed() )
-                            .collect( toList() );
+                        new PlayerToDisplayPlayerMapping().apply( players );
                     if( isNotEmpty( newDisplayPlayers ) )
                     {
                         synchronized( theDataLock )
