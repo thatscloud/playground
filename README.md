@@ -17,4 +17,3 @@ A list of nice-to-haves (aka the never-will-get-dones):
  - Creation of player pages.
  - Ranking-over-time graphs.
  - Ability to add custom columns to the main table.
- - Ability to sort columns on main table.

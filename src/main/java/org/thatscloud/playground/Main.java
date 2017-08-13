@@ -110,10 +110,10 @@ public class Main
             {
                 final StringBuilder sb = new StringBuilder();
                 sb.append( "<!DOCTYPE html>" );
-                sb.append( "<html>" );
+                sb.append( "<html lang=\"en\">" );
                 sb.append( "<head>" );
                 sb.append( "<title>Playground - A PUBG Tracker</title>" );
-                sb.append( "<link href=\"//fonts.googleapis.com/css?family=Raleway:400,300,600\" " +
+                sb.append( "<link href=\"//fonts.googleapis.com/css?family=Nunito:300,400,600\" " +
                            "rel=\"stylesheet\" type=\"text/css\">" );
                 sb.append( "<link rel=\"stylesheet\" href=\"css/normalize.css\">" );
                 sb.append( "<link rel=\"stylesheet\" href=\"css/skeleton.css\">" );
