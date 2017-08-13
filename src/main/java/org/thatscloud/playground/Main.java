@@ -94,6 +94,10 @@ public class Main
             {
                 res.raw().setContentType( "text/css; charset=utf-8" );
             }
+            else if( req.url().endsWith( ".js" ) )
+            {
+                res.raw().setContentType( "text/javascript; charset=utf-8" );
+            }
             else
             {
                 res.raw().setContentType( "text/html; charset=utf-8" );
@@ -114,11 +118,15 @@ public class Main
                 sb.append( "<link rel=\"stylesheet\" href=\"css/normalize.css\">" );
                 sb.append( "<link rel=\"stylesheet\" href=\"css/skeleton.css\">" );
                 sb.append( "<link rel=\"stylesheet\" href=\"css/custom.css\">" );
+                sb.append( "<link rel=\"stylesheet\" href=\"css/tablesorter-theme.css\">" );
+                sb.append( "<script src=\"https://cdn.jsdelivr.net/jquery/3.2.1/jquery.min.js\"></script>" );
+                sb.append( "<script src=\"https://cdn.jsdelivr.net/tablesorter/2.28.9/js/jquery.tablesorter.min.js\"></script>" );
+                sb.append( "<script src=\"js/sorter.js\"></script>" );
                 sb.append( "</head>" );
                 sb.append( "<body>" );
                 sb.append( "<div class=\"section\"><div class=\"container\">" );
                 sb.append( "<h1 style=\"text-align: center; padding-top: 20px;\">Rankings</h1>" );
-                sb.append( "<table>" );
+                sb.append( "<table id=\"resultsTable\" class=\"tablesorter\">" );
                 sb.append( "<thead><tr>" +
                            "<th>Rank</th>" +
                            "<th>Player</th>" +
@@ -126,9 +134,9 @@ public class Main
                            "<th>Solo Rating</th>" +
                            "<th>Duo Rating</th>" +
                            "<th>Squad Rating</th>" +
-                           "<th>OC Solo Rank</th>" +
-                           "<th>OC Duo Rank</th>" +
-                           "<th>OC Squad Rank</th>" +
+                           "<th class=\"sorter-playground-ordinal\">OC Solo Rank</th>" +
+                           "<th class=\"sorter-playground-ordinal\">OC Duo Rank</th>" +
+                           "<th class=\"sorter-playground-ordinal\">OC Squad Rank</th>" +
                            "<th>Overall K/D Ratio</th>" +
                            "<th>Total Games Played</th>" +
                            "<th>Top 10 Percentage</th>" +
