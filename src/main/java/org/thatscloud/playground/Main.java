@@ -128,7 +128,7 @@ public class Main
                 sb.append( "<h1 style=\"text-align: center; padding-top: 20px;\">Rankings</h1>" );
                 sb.append( "<table id=\"resultsTable\" class=\"tablesorter\">" );
                 sb.append( "<thead><tr>" +
-                           "<th>Rank</th>" +
+                           "<th class=\"sorter-playground-rank\">Rank</th>" +
                            "<th>Player</th>" +
                            "<th>Overall Rating</th>" +
                            "<th>Solo Rating</th>" +
@@ -148,7 +148,15 @@ public class Main
                 {
                     sb.append( "<tr>" );
                     sb.append( "<td>" );
-                    sb.append( ++rank );
+                    rank++;
+                    if( displayPlayer.getAggregateRating() == null )
+                    {
+                        sb.append( "N/A" );
+                    }
+                    else
+                    {
+                        sb.append( rank );
+                    }
                     sb.append( "</td>" );
                     sb.append( "<td>" );
                     sb.append( "<a href=\"https://pubgtracker.com/profile/pc/" );

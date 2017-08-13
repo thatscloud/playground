@@ -19,6 +19,23 @@ $( document ).ready( function()
         type: 'numeric'
     } );
     
+    $.tablesorter.addParser(
+    {
+        id: "playground-rank",
+        is: function( s, table, cell, $cell ) { return false; },
+        format: function( s, table, cell, cellIndex ) 
+        {
+            if( !/\d/g.test( s ) )
+            {
+                return s;
+            }
+            
+            return -( s.replace( /,/, "" ) );
+        },
+        parsed: false,
+        type: 'numeric'
+    } );
+    
     $( "#resultsTable" ).tablesorter(
     {
         sortInitialOrder: "desc",
