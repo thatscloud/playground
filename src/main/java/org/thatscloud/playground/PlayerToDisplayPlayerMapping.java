@@ -6,30 +6,34 @@ import static org.apache.commons.lang3.StringUtils.compareIgnoreCase;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.function.Function;
+
 
 public class PlayerToDisplayPlayerMapping implements Function<List<Player>, List<DisplayPlayer>>
 {
     @Override
     public List<DisplayPlayer> apply( final List<Player> players )
     {
-        final String latestSeason = findLatestSeason( players );
-        final BigDecimal worstSoloRatin = findWorstModeRating( players, latestSeason, Mode.SOLO );
-        final BigDecimal worstDuoRatin = findWorstModeRating( players, latestSeason, Mode.DUO );
-        final BigDecimal worstSquadRatin =
+        final Optional<String> latestSeasonOpt = findLatestSeason( players );
+        if( !latestSeasonOpt.isPresent() )
+        {
+            return Collections.emptyList();
+        }
+        final String latestSeason = latestSeasonOpt.get();
+        final BigDecimal worstSoloRating = findWorstModeRating( players, latestSeason, Mode.SOLO );
+        final BigDecimal worstDuoRating = findWorstModeRating( players, latestSeason, Mode.DUO );
+        final BigDecimal worstSquadRating =
             findWorstModeRating( players, latestSeason, Mode.SQUAD );
         return players.stream()
             .map( p ->
             {
-                final BigDecimal worstSoloRating = worstSoloRatin;
-                final BigDecimal worstDuoRating = worstDuoRatin;
-                final BigDecimal worstSquadRating = worstSquadRatin;
-                    findWorstModeRating( players, latestSeason, Mode.SQUAD );
                 long totalKills = 0;
                 long totalDeaths = 0;
                 long totalTop10s = 0;
@@ -222,14 +226,14 @@ public class PlayerToDisplayPlayerMapping implements Function<List<Player>, List
             .collect( toList() );
     }
 
-    private String findLatestSeason( final List<Player> players )
+    private Optional<String> findLatestSeason( final List<Player> players )
     {
         final SortedSet<String> seasons = new TreeSet<>();
         for( final Player player : players )
         {
             seasons.add( player.getDefaultSeason() );
         }
-        return seasons.last();
+        return seasons.isEmpty() ? Optional.empty() : Optional.of( seasons.last() );
     }
 
     private enum Mode{ SOLO, DUO, SQUAD }
@@ -254,14 +258,14 @@ public class PlayerToDisplayPlayerMapping implements Function<List<Player>, List
                                 mode == Mode.DUO && gms.getMatch().equals( "duo" ) ||
                                 mode == Mode.SQUAD && gms.getMatch().equals( "squad" ) )
                             {
-                                ratings.add(  stat.getValueDecimal() );
+                                ratings.add( stat.getValueDecimal() );
                             }
                         }
                     }
                 }
             }
         }
-        return ratings.first() == null || ratings.first().compareTo( BigDecimal.ONE ) < 0 ?
+        return ratings.isEmpty() || ratings.first().compareTo( BigDecimal.ONE ) < 0 ?
             BigDecimal.ONE :
             ratings.first();
     }
