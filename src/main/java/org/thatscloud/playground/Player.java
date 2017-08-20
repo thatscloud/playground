@@ -14,7 +14,6 @@ public class Player extends BaseJsonEntity
     private String mySelectedRegion;
     private String myDefaultSeason;
     private Instant myLastUpdated;
-    private List<LiveTracking> myLiveTracking;
     private String myPlayerName;
     private Long myPubgTrackerId;
     private List<GameModeStatistics> myStatistics;
@@ -82,17 +81,6 @@ public class Player extends BaseJsonEntity
     public void setLastUpdated( final Instant lastUpdated )
     {
         myLastUpdated = lastUpdated;
-    }
-
-    @JsonProperty( "LiveTracking" )
-    public List<LiveTracking> getLiveTracking()
-    {
-        return myLiveTracking;
-    }
-
-    public void setLiveTracking( final List<LiveTracking> liveTracking )
-    {
-        myLiveTracking = liveTracking;
     }
 
     @JsonProperty( "PlayerName" )

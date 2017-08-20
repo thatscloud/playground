@@ -36,6 +36,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.LongStream;
 
+import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 
 import org.apache.commons.lang3.StringUtils;
@@ -312,10 +313,12 @@ public class Main
                     final List<Player> players = new ArrayList<>();
                     for( final String playerName : playerNames )
                     {
+                        Client client = null;
                         try
                         {
+                            client = ClientBuilder.newClient();
                             final Player player =
-                                ClientBuilder.newClient()
+                                client
                                     .property( FEATURE_AUTO_DISCOVERY_DISABLE, true )
                                     .property( JSON_PROCESSING_FEATURE_DISABLE, true )
                                     .property( METAINF_SERVICES_LOOKUP_DISABLE, true )
@@ -348,6 +351,13 @@ public class Main
                             theLogger.error(
                                 "Error in REST call for player \"" + playerName + "\"", e );
                         }
+                        finally
+                        {
+                            if( client != null )
+                            {
+                                client.close();
+                            }
+                        }
                         Thread.sleep( SLEEP_TIME_BETWEEN_API_READS_IN_MILLISECONDS );
                     }
 
@@ -360,18 +370,6 @@ public class Main
                             theLogger.warn( "player[\"" + playerName + "\"] has unknown " +
                                             "properties: " +
                                             player.unknownProperties() );
-                        }
-                        int liveTrackingCounter = 0;
-                        for( final LiveTracking liveTracking : player.getLiveTracking() )
-                        {
-                            if( liveTracking.hasUnknownProperties() )
-                            {
-                                theLogger.warn( "player[\"" + playerName + "\"].LiveTracking[" +
-                                                liveTrackingCounter + "] has unknown " +
-                                                "properties: " +
-                                                liveTracking.unknownProperties() );
-                            }
-                            liveTrackingCounter++;
                         }
                         int gmsCounter = 0;
                         for( final GameModeStatistics gms : player.getStatistics() )
