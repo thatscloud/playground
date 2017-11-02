@@ -1,7 +1,12 @@
-package org.thatscloud.playground;
+package org.thatscloud.playground.rest.model;
 
 import java.time.Instant;
-import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+
+import org.thatscloud.playground.util.json.ArrayToMapDeserialiser;
+import org.thatscloud.playground.util.json.LenientInstantDeserialiser;
+import org.thatscloud.playground.util.json.annotation.JsonKey;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -16,7 +21,7 @@ public class Player extends BaseJsonEntity
     private Instant myLastUpdated;
     private String myPlayerName;
     private Long myPubgTrackerId;
-    private List<GameModeStatistics> myStatistics;
+    private  Map<GameModeStatisticsKey, GameModeStatistics> myStatistics;
     private Object myMatchHistory;
 
     public Long getPlatformId()
@@ -105,13 +110,28 @@ public class Player extends BaseJsonEntity
         myPubgTrackerId = pubgTrackerId;
     }
 
+    public static class GameModeStatisticsKeyMapper implements
+        Function<GameModeStatistics, GameModeStatisticsKey>
+    {
+        @Override
+        public GameModeStatisticsKey apply( final GameModeStatistics t )
+        {
+            return new GameModeStatisticsKey( t.getRegion(),
+                                              t.getSeason(),
+                                              t.getGameMode() );
+        }
+    }
+
     @JsonProperty( "Stats" )
-    public List<GameModeStatistics> getStatistics()
+    @JsonKey( GameModeStatisticsKeyMapper.class )
+    @JsonDeserialize( using = ArrayToMapDeserialiser.class )
+    public Map<GameModeStatisticsKey, GameModeStatistics> getStatistics()
     {
         return myStatistics;
     }
 
-    public void setStatistics( final List<GameModeStatistics> statistics )
+    public void setStatistics(
+        final Map<GameModeStatisticsKey, GameModeStatistics> statistics )
     {
         myStatistics = statistics;
     }
@@ -126,6 +146,4 @@ public class Player extends BaseJsonEntity
     {
         myMatchHistory = matchHistory;
     }
-
-
 }

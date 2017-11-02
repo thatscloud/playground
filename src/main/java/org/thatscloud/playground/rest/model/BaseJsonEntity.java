@@ -1,4 +1,4 @@
-package org.thatscloud.playground;
+package org.thatscloud.playground.rest.model;
 
 import java.util.HashMap;
 import java.util.Map;

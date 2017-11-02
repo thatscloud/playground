@@ -1,6 +1,8 @@
-package org.thatscloud.playground;
+package org.thatscloud.playground.rest.model;
 
 import java.math.BigDecimal;
+
+import org.thatscloud.playground.rest.model.constant.StatisticField;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -9,7 +11,7 @@ public class Statistic extends BaseJsonEntity
     private String myPartition;
     private String myLabel;
     private String mySubLabel;
-    private String myField;
+    private StatisticField myField;
     private String myCategory;
     private Long myValueInteger;
     private BigDecimal myValueDecimal;
@@ -48,12 +50,12 @@ public class Statistic extends BaseJsonEntity
         mySubLabel = subLabel;
     }
 
-    public String getField()
+    public StatisticField getField()
     {
         return myField;
     }
 
-    public void setField( final String field )
+    public void setField( final StatisticField field )
     {
         myField = field;
     }

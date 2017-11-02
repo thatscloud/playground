@@ -1,19 +1,30 @@
 package org.thatscloud.playground;
 
 import static java.util.stream.Collectors.toList;
+import static org.apache.commons.collections4.ComparatorUtils.reversedComparator;
 import static org.apache.commons.lang3.ObjectUtils.compare;
 import static org.apache.commons.lang3.StringUtils.compareIgnoreCase;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.mutable.MutableObject;
+import org.thatscloud.playground.rest.model.GameModeStatistics;
+import org.thatscloud.playground.rest.model.GameModeStatisticsKey;
+import org.thatscloud.playground.rest.model.Player;
+import org.thatscloud.playground.rest.model.Statistic;
+import org.thatscloud.playground.rest.model.constant.GameMode;
+import org.thatscloud.playground.rest.model.constant.Region;
+import org.thatscloud.playground.rest.model.constant.StatisticField;
 
 
 public class PlayerToDisplayPlayerMapping implements Function<List<Player>, List<DisplayPlayer>>
@@ -27,176 +38,54 @@ public class PlayerToDisplayPlayerMapping implements Function<List<Player>, List
             return Collections.emptyList();
         }
         final String latestSeason = latestSeasonOpt.get();
-        final BigDecimal worstSoloRating = findWorstModeRating( players, latestSeason, Mode.SOLO );
-        final BigDecimal worstDuoRating = findWorstModeRating( players, latestSeason, Mode.DUO );
+        final BigDecimal worstSoloRating =
+            findWorstModeRating( players, latestSeason, GameMode.SOLO );
+        final BigDecimal worstDuoRating =
+            findWorstModeRating( players, latestSeason, GameMode.DUO );
         final BigDecimal worstSquadRating =
-            findWorstModeRating( players, latestSeason, Mode.SQUAD );
+            findWorstModeRating( players, latestSeason, GameMode.SQUAD );
         return players.stream()
-            .map( p ->
+            .map( player ->
             {
-                long totalKills = 0;
-                long totalDeaths = 0;
-                long totalTop10s = 0;
                 final DisplayPlayer displayPlayer = new DisplayPlayer();
-                displayPlayer.setPlayerName( p.getPlayerName() );
+                displayPlayer.setPlayerName( player.getPlayerName() );
                 displayPlayer.setTotalGamesPlayed( 0L );
-                displayPlayer.setAvatarUrl( p.getAvatarUrl() );
-                final String defaultSeason = p.getDefaultSeason();
-                if( !Objects.equals( p.getDefaultSeason(), latestSeason ) )
+                displayPlayer.setAvatarUrl( player.getAvatarUrl() );
+                final String defaultSeason = player.getDefaultSeason();
+                if( !Objects.equals( player.getDefaultSeason(), latestSeason ) )
                 {
                     return displayPlayer;
                 }
-                boolean killDeathRatioCalculable = true;
 
-                for( final GameModeStatistics gms : p.getStatistics() )
-                {
-                    if( gms.getRegion().equals( "agg" ) &&
-                        gms.getSeason().equals( defaultSeason ) )
-                    {
-                        Long aggModeKills = null;
-                        BigDecimal aggModeKdRatio = null;
-                        Long aggModeGamesPlayed = null;
-                        Long aggModeWins = null;
-                        for( final Statistic stat : gms.getStatistics() )
-                        {
-                            if( stat.getLabel().equals( "Rating" ) )
-                            {
-                                if( gms.getMatch().equals( "solo" ) )
-                                {
-                                    displayPlayer
-                                        .setSoloRating( stat.getValueDecimal() );
-                                }
-                                else if( gms.getMatch().equals( "duo" ) )
-                                {
-                                    displayPlayer
-                                        .setDuoRating( stat.getValueDecimal() );
-                                }
-                                else if( gms.getMatch().equals( "squad" ) )
-                                {
-                                    displayPlayer
-                                        .setSquadRating( stat.getValueDecimal() );
-                                }
-                            }
-                            if( stat.getLabel().equals( "Kills" ) )
-                            {
-                                aggModeKills = stat.getValueInteger();
-                            }
-                            if( stat.getLabel().equals( "K/D Ratio" ) )
-                            {
-                                aggModeKdRatio = stat.getValueDecimal();
-                            }
-                            if( stat.getLabel().equals( "Rounds Played" ) )
-                            {
-                                aggModeGamesPlayed = stat.getValueInteger();
-                            }
-                            if( stat.getLabel().equals( "Wins" ) )
-                            {
-                                aggModeWins = stat.getValueInteger();
-                            }
-                            if( stat.getLabel().equals( "Top 10s" ) )
-                            {
-                                totalTop10s += stat.getValueInteger();
-                            }
-                        }
-                        if( killDeathRatioCalculable &&
-                            aggModeKills != null &&
-                            aggModeKdRatio != null )
-                        {
-                            if( BigDecimal.ZERO.compareTo( aggModeKdRatio ) != 0 )
-                            {
-                                final long aggModeDeaths =
-                                    BigDecimal.valueOf( aggModeKills )
-                                        .divide( aggModeKdRatio,
-                                                 0,
-                                                 RoundingMode.HALF_UP )
-                                        .longValue();
-                                totalDeaths += aggModeDeaths;
-                                totalKills += aggModeKills;
-                            }
-                            else
-                            {
-                                if( aggModeWins != null &&
-                                    aggModeGamesPlayed != null )
-                                {
-                                    // This is not technically true
-                                    // as it doesn't hold for
-                                    // duo and squad games, but
-                                    // it should be close enough for
-                                    // players without a kill.
-                                    final long aggModeDeaths =
-                                        aggModeGamesPlayed - aggModeWins;
-                                    totalDeaths += aggModeDeaths;
-                                    totalKills += aggModeKills;
-                                }
-                                else
-                                {
-                                    killDeathRatioCalculable = false;
-                                }
-                            }
-                        }
+                displayPlayer.setSoloRating(
+                    getGameModeRating( player, GameMode.SOLO, defaultSeason ) );
+                displayPlayer.setDuoRating(
+                    getGameModeRating( player, GameMode.DUO, defaultSeason ) );
+                displayPlayer.setSquadRating(
+                    getGameModeRating( player, GameMode.SQUAD, defaultSeason ) );
+                displayPlayer.setOceaniaSoloRank(
+                    getGameModeRank( player, GameMode.SOLO, defaultSeason ) );
+                displayPlayer.setOceaniaDuoRank(
+                    getGameModeRank( player, GameMode.DUO, defaultSeason ) );
+                displayPlayer.setOceaniaSquadRank(
+                    getGameModeRank( player, GameMode.SQUAD, defaultSeason ) );
 
-                        displayPlayer.setTotalGamesPlayed(
-                            displayPlayer.getTotalGamesPlayed() +
-                            aggModeGamesPlayed );
-                    }
-                    if( gms.getRegion().equals( "oc" ) &&
-                        gms.getSeason().equals( defaultSeason ) )
-                    {
-                        for( final Statistic stat : gms.getStatistics() )
-                        {
-                            if( stat.getLabel().equals( "Rating" ) )
-                            {
-                                if( gms.getMatch().equals( "solo" ) )
-                                {
-                                    displayPlayer
-                                        .setOceaniaSoloRank( stat.getRank() );
-                                }
-                                else if( gms.getMatch().equals( "duo" ) )
-                                {
-                                    displayPlayer
-                                        .setOceaniaDuoRank( stat.getRank() );
-                                }
-                                else if( gms.getMatch().equals( "squad" ) )
-                                {
-                                    displayPlayer
-                                        .setOceaniaSquadRank( stat.getRank() );
-                                }
-                            }
-                        }
-                    }
-                }
+                final long totalTop10s =
+                    getIntegerStatisticTotal( player, StatisticField.TOP_10S, defaultSeason );
+                final long totalKills =
+                    getIntegerStatisticTotal( player, StatisticField.KILLS, defaultSeason );
+                final Long totalDeaths =
+                    calculateTotalDeaths( player, defaultSeason );
+                displayPlayer.setTotalGamesPlayed(
+                    getIntegerStatisticTotal( player,
+                                              StatisticField.ROUNDS_PLAYED,
+                                              defaultSeason ) );
 
-                displayPlayer.setAggregateRating(
-                    new BigDecimal( 3 )
-                        .divide(
-                            BigDecimal.ZERO
-                                .add( BigDecimal.ONE.divide(
-                                          displayPlayer.getSoloRating() == null ||
-                                          displayPlayer.getSoloRating()
-                                                  .compareTo( BigDecimal.ONE ) < 0 ?
-                                              worstSoloRating :
-                                              displayPlayer.getSoloRating(),
-                                          16,
-                                          RoundingMode.HALF_DOWN ) )
-                                .add( BigDecimal.ONE.divide(
-                                          displayPlayer.getDuoRating() == null ||
-                                          displayPlayer.getDuoRating()
-                                                  .compareTo( BigDecimal.ONE ) < 0 ?
-                                              worstDuoRating :
-                                              displayPlayer.getDuoRating(),
-                                              16,
-                                              RoundingMode.HALF_DOWN  ) )
-                                .add( BigDecimal.ONE.divide(
-                                          displayPlayer.getSquadRating() == null ||
-                                          displayPlayer.getSquadRating()
-                                                   .compareTo( BigDecimal.ONE ) < 0 ?
-                                               worstSquadRating :
-                                               displayPlayer.getSquadRating(),
-                                           16,
-                                           RoundingMode.HALF_DOWN ) ),
-                            2,
-                            RoundingMode.HALF_UP ) );
-                if( killDeathRatioCalculable && totalDeaths != 0 )
+                displayPlayer.setAggregateRating( calculateAggregateRating( displayPlayer,
+                                                                            worstSoloRating,
+                                                                            worstDuoRating,
+                                                                            worstSquadRating ) );
+                if( totalDeaths != null && totalDeaths != 0L )
                 {
                     displayPlayer.setOverallKillDeathRatio(
                         BigDecimal.valueOf( totalKills )
@@ -217,12 +106,10 @@ public class PlayerToDisplayPlayerMapping implements Function<List<Player>, List
                 return displayPlayer;
             } )
             .filter( Objects::nonNull )
-            .sorted( ( p1, p2 ) -> compareIgnoreCase(
-                                            p1.getPlayerName(),
-                                            p2.getPlayerName() ) )
-            .sorted( ( (Comparator<DisplayPlayer>)( p1, p2 ) ->
-                            compare( p1.getAggregateRating(),
-                                     p2.getAggregateRating() ) ).reversed() )
+            .sorted( ( p1, p2 ) -> compareIgnoreCase( p1.getPlayerName(),
+                                                      p2.getPlayerName() ) )
+            .sorted( reversedComparator( ( p1, p2 ) -> compare( p1.getAggregateRating(),
+                                                                p2.getAggregateRating() ) ) )
             .collect( toList() );
     }
 
@@ -236,38 +123,180 @@ public class PlayerToDisplayPlayerMapping implements Function<List<Player>, List
         return seasons.isEmpty() ? Optional.empty() : Optional.of( seasons.last() );
     }
 
-    private enum Mode{ SOLO, DUO, SQUAD }
-
     private BigDecimal findWorstModeRating( final List<Player> players,
                                             final String currentSeason,
-                                            final Mode mode )
+                                            final GameMode gameMode )
     {
-        final SortedSet<BigDecimal> ratings = new TreeSet<>();
-        for( final Player player : players )
-        {
-            for( final GameModeStatistics gms : player.getStatistics() )
-            {
-                if( gms.getRegion().equals( "agg" ) &&
-                    gms.getSeason().equals( currentSeason ) )
-                {
-                    for( final Statistic stat : gms.getStatistics() )
-                    {
-                        if( stat.getLabel().equals( "Rating" ) )
-                        {
-                            if( mode == Mode.SOLO && gms.getMatch().equals( "solo" ) ||
-                                mode == Mode.DUO && gms.getMatch().equals( "duo" ) ||
-                                mode == Mode.SQUAD && gms.getMatch().equals( "squad" ) )
-                            {
-                                ratings.add( stat.getValueDecimal() );
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return ratings.isEmpty() || ratings.first().compareTo( BigDecimal.ONE ) < 0 ?
-            BigDecimal.ONE :
-            ratings.first();
+        return players.stream()
+            .map( Player::getStatistics )
+            .map( gms -> gms.get( new GameModeStatisticsKey( Region.AGGREGATE,
+                                                             currentSeason,
+                                                             gameMode ) ) )
+            .filter( Objects::nonNull )
+            .map( GameModeStatistics::getStatistics )
+            .map( stats -> stats.get( StatisticField.RATING ) )
+            .filter( Objects::nonNull )
+            .map( Statistic::getValueDecimal )
+            .sorted()
+            .filter( value -> value.compareTo( BigDecimal.ZERO ) != 0 )
+            .findFirst()
+            .orElse( BigDecimal.ONE );
     }
 
+    private Long calculateTotalDeaths( final Player player, final String defaultSeason )
+    {
+        return Arrays.stream( GameMode.values() )
+            .map( gm ->
+                Optional.of( player )
+                    .map( Player::getStatistics )
+                    .map( gms -> gms.get( new GameModeStatisticsKey( Region.AGGREGATE,
+                                                                     defaultSeason,
+                                                                     gm ) ) )
+                    .orElse( null ) )
+            .filter( Objects::nonNull )
+            .map( GameModeStatistics::getStatistics )
+            .map( stats ->
+            {
+                final Long kills = stats.get( StatisticField.KILLS ).getValueInteger();
+                final BigDecimal killDeathRatio =
+                    stats.get( StatisticField.KILL_DEATH_RATIO ).getValueDecimal();
+                if( kills != null &&
+                    killDeathRatio != null &&
+                    BigDecimal.ZERO.compareTo( killDeathRatio ) != 0 )
+                {
+                    return BigDecimal.valueOf( kills )
+                        .divide( killDeathRatio,
+                                 0,
+                                 RoundingMode.HALF_UP )
+                        .longValue();
+                }
+
+                final Long wins = stats.get( StatisticField.WINS ).getValueInteger();
+                final Long roundsPlayed =
+                    stats.get( StatisticField.ROUNDS_PLAYED ).getValueInteger();
+                if( wins != null && roundsPlayed != null )
+                {
+                    // This is not technically true
+                    // as it doesn't hold for
+                    // duo and squad games, but
+                    // it should be close enough for
+                    // players without a kill.
+                    return roundsPlayed - wins;
+                }
+                return null;
+            } )
+            .collect( () -> new MutableObject<Long>(),
+                      ( acc, l ) ->
+                      {
+                          if( l == null )
+                          {
+                              acc.setValue( null );
+                          }
+                          else if( acc.getValue() != null )
+                          {
+                              acc.setValue( acc.getValue() + l );
+                          }
+                      },
+                      ( accR, accI ) ->
+                      {
+                          if( accR.getValue() != null )
+                          {
+                              if( accI.getValue() == null )
+                              {
+                                  accR.setValue( null );
+                              }
+                              else
+                              {
+                                  accR.setValue( accR.getValue() + accI.getValue() );
+                              }
+                          }
+                      } )
+            .getValue();
+    }
+
+    private BigDecimal getGameModeRating( final Player player,
+                                          final GameMode gameMode,
+                                          final String defaultSeason )
+    {
+        return Optional.of( player )
+            .map( Player::getStatistics )
+            .map( gms -> gms.get( new GameModeStatisticsKey( Region.AGGREGATE,
+                                                             defaultSeason,
+                                                             gameMode ) ) )
+            .map( GameModeStatistics::getStatistics )
+            .map( stats -> stats.get( StatisticField.RATING ) )
+            .map( Statistic::getValueDecimal )
+            .orElse( null );
+    }
+
+    private Long getGameModeRank( final Player player,
+                                  final GameMode gameMode,
+                                  final String defaultSeason )
+    {
+        return Optional.of( player )
+            .map( Player::getStatistics )
+            .map( gms -> gms.get( new GameModeStatisticsKey( Region.OCEANIA,
+                                                             defaultSeason,
+                                                             gameMode ) ) )
+            .map( GameModeStatistics::getStatistics )
+            .map( stats -> stats.get( StatisticField.RATING ) )
+            .map( Statistic::getRank )
+            .orElse( null );
+    }
+
+    private Long getIntegerStatisticTotal( final Player player,
+                                           final StatisticField statisticField,
+                                           final String defaultSeason )
+    {
+        return Arrays.stream( GameMode.values() )
+            .map( gm ->
+                Optional.of( player )
+                .map( Player::getStatistics )
+                .map( gms -> gms.get( new GameModeStatisticsKey( Region.AGGREGATE,
+                                                                 defaultSeason,
+                                                                 gm ) ) )
+                .orElse( null ) )
+            .filter( Objects::nonNull )
+            .map( GameModeStatistics::getStatistics )
+            .map( stats -> stats.get( statisticField ) )
+            .map( Statistic::getValueInteger )
+            .filter( Objects::nonNull )
+            .collect( Collectors.summingLong( Long::longValue ) );
+    }
+
+    private BigDecimal calculateAggregateRating( final DisplayPlayer displayPlayer,
+                                                 final BigDecimal worstSoloRating,
+                                                 final BigDecimal worstDuoRating,
+                                                 final BigDecimal worstSquadRating )
+    {
+        return new BigDecimal( 3 )
+        .divide(
+            BigDecimal.ZERO
+                .add( BigDecimal.ONE.divide(
+                          displayPlayer.getSoloRating() == null ||
+                          displayPlayer.getSoloRating()
+                                  .compareTo( BigDecimal.ONE ) < 0 ?
+                              worstSoloRating :
+                              displayPlayer.getSoloRating(),
+                          16,
+                          RoundingMode.HALF_DOWN ) )
+                .add( BigDecimal.ONE.divide(
+                          displayPlayer.getDuoRating() == null ||
+                          displayPlayer.getDuoRating()
+                                  .compareTo( BigDecimal.ONE ) < 0 ?
+                              worstDuoRating :
+                              displayPlayer.getDuoRating(),
+                              16,
+                              RoundingMode.HALF_DOWN  ) )
+                .add( BigDecimal.ONE.divide(
+                          displayPlayer.getSquadRating() == null ||
+                          displayPlayer.getSquadRating()
+                                   .compareTo( BigDecimal.ONE ) < 0 ?
+                               worstSquadRating :
+                               displayPlayer.getSquadRating(),
+                           16,
+                           RoundingMode.HALF_DOWN ) ),
+            2,
+            RoundingMode.HALF_UP );
+    }
 }
