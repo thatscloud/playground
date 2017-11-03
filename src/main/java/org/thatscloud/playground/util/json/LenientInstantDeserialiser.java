@@ -1,4 +1,4 @@
-package org.thatscloud.playground;
+package org.thatscloud.playground.util.json;
 
 import java.io.IOException;
 import java.time.Instant;

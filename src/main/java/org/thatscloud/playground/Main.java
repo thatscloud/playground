@@ -1,5 +1,6 @@
 package org.thatscloud.playground;
 
+import static com.fasterxml.jackson.databind.DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonMap;
 import static java.util.stream.Collectors.toList;
@@ -44,6 +45,9 @@ import org.apache.commons.lang3.mutable.Mutable;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.thatscloud.playground.rest.model.GameModeStatistics;
+import org.thatscloud.playground.rest.model.Player;
+import org.thatscloud.playground.rest.model.Statistic;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
@@ -327,7 +331,9 @@ public class Main
                                             new ObjectMapper()
                                                 .registerModule( new ParameterNamesModule() )
                                                 .registerModule( new Jdk8Module() )
-                                                .registerModule( new JavaTimeModule() ) ) )
+                                                .registerModule( new JavaTimeModule() )
+                                                .configure( READ_UNKNOWN_ENUM_VALUES_AS_NULL,
+                                                            true ) ) )
                                     .target( "https://pubgtracker.com/api" )
                                     .path( "profile" )
                                     .path( "pc" )
@@ -372,7 +378,7 @@ public class Main
                                             player.unknownProperties() );
                         }
                         int gmsCounter = 0;
-                        for( final GameModeStatistics gms : player.getStatistics() )
+                        for( final GameModeStatistics gms : player.getStatistics().values() )
                         {
                             if( gms.hasUnknownProperties() )
                             {
@@ -382,7 +388,7 @@ public class Main
                                                 gms.unknownProperties() );
                             }
                             int statCounter = 0;
-                            for( final Statistic stat : gms.getStatistics() )
+                            for( final Statistic stat : gms.getStatistics().values() )
                             {
                                 if( stat.hasUnknownProperties() )
                                 {
