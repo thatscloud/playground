@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Playground - A PUBG Tracker</title>
+<link href="//fonts.googleapis.com/css?family=Nunito:300,400,600"
+	rel="stylesheet" type="text/css">
+<link rel="stylesheet" href="css/normalize.css">
+<link rel="stylesheet" href="css/skeleton.css">
+<link rel="stylesheet" href="css/custom.css">
+<link rel="stylesheet" href="css/tablesorter-theme.css">
+<script src="https://cdn.jsdelivr.net/jquery/3.2.1/jquery.min.js"></script>
+<script
+	src="https://cdn.jsdelivr.net/tablesorter/2.28.9/js/jquery.tablesorter.min.js"></script>
+<script src="js/sorter.js"></script>
+</head>
+<body>
+	<div class="section">
+		<div class="container">
+			<h1 style="text-align: center; padding-top: 20px;">Rankings</h1>
+			<table id="resultsTable" class="tablesorter">
+				<thead>
+					<tr>
+						<th class="sorter-playground-rank">Rank</th>
+						<th>Player</th>
+						<th>Overall Rating</th>
+						<th>Solo Rating</th>
+						<th>Duo Rating</th>
+						<th>Squad Rating</th>
+						<th class="sorter-playground-ordinal">OC Solo Rank</th>
+						<th class="sorter-playground-ordinal">OC Duo Rank</th>
+						<th class="sorter-playground-ordinal">OC Squad Rank</th>
+						<th>Overall K/D Ratio</th>
+						<th>Total Games Played</th>
+						<th>Top 10 Percentage</th>
+					</tr>
+				</thead>
+				<tbody>
+					<!--- ng-repeat here -->
+					<tr>
+						<td>N/A or Rank</td>
+						<td><a href="https://pubgtracker.com/profile/pc/test">
+								<div>
+									img
+									<!--<img alt="playername's avatar" title="playername's avatar" src="players url" />-->
+								</div>
+								<div>get player name</div>
+						</a></td>
+						<td><strong>aggregate rating</strong></td>
+						<td><strong>solo rating</strong></td>
+						<td><strong>duo rating</strong></td>
+						<td><strong>squad rating</strong></td>
+						<td><strong>oceania solo rank</strong></td>
+						<td><strong>oceania duo rank</strong></td>
+						<td><strong>oceania squad rank</strong></td>
+						<td><strong>overall KD ratio</strong></td>
+						<td><strong>Total games played </strong></td>
+						<td><strong>top ten percentage</strong></td>
+					</tr>
+					<!-- end of repeat here -->
+
+				</tbody>
+			</table>
+		</div>
+	</div>
+</body>
+</html>

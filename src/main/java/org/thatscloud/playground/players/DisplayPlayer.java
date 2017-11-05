@@ -1,4 +1,4 @@
-package org.thatscloud.playground;
+package org.thatscloud.playground.players;
 
 import java.math.BigDecimal;
 

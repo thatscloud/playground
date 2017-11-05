@@ -1,5 +1,6 @@
-package org.thatscloud.playground;
+package org.thatscloud.playground.route.content;
 
+import static spark.Spark.get;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -8,20 +9,27 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import org.apache.commons.io.IOUtils;
+import org.thatscloud.playground.route.management.RegistrableRoute;
 
 import spark.Request;
 import spark.Response;
-import spark.Route;
 import spark.Spark;
+import spark.utils.IOUtils;
 
-public class StaticContentRoute implements Route
+
+public class StaticContentRoute extends RegistrableRoute
 {
-    @Override
-    public Object handle( final Request request, final Response response )
-        throws Exception
+
+    public StaticContentRoute(  )
     {
-        final String uriString;
+        super( );
+    }
+
+    @Override
+    public Object handle( final Request request,
+                          final Response response ) throws Exception
+    {
+    	final String uriString;
         if( request.splat() == null ||
             request.splat().length == 0 )
         {
@@ -69,4 +77,12 @@ public class StaticContentRoute implements Route
         }
         return response.raw();
     }
+
+    @Override
+    public void register()
+    {
+        // Redirect all other pages to static content (or 404)
+        get( "/*", this );
+    }
+
 }
