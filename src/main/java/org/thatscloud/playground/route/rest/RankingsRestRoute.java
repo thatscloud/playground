@@ -9,16 +9,26 @@ import org.thatscloud.playground.route.management.RegistrableRoute;
 
 public class RankingsRestRoute extends RegistrableRoute {
 
+	boolean test = true;
+
 	public RankingsRestRoute() {
 	}
 
 	@Override
 	public void register() {
-		get( "/rankings", "application/json", ( request, response ) -> {
-            Map<String, Object> page = getNewPageModel( request );
-            page.put("players", PlayersContainer.theDisplayPlayers);
-            return page;
-        }, getJsonTransformer() );
+		if (test) {
+			get("/rest/rankings", "application/json", (request, response) -> {
+				Map<String, Object> page = getNewPageModel(request);
+				page.put("testData", "testtesttest}");
+				return page;
+			}, getJsonTransformer());
+		} else {
+			get("/rankings", "application/json", (request, response) -> {
+				Map<String, Object> page = getNewPageModel(request);
+				page.put("players", PlayersContainer.theDisplayPlayers);
+				return page;
+			}, getJsonTransformer());
+		}
 	}
 
 }
