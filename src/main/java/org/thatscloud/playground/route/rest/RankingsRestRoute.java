@@ -16,19 +16,14 @@ public class RankingsRestRoute extends RegistrableRoute {
 
 	@Override
 	public void register() {
-		if (test) {
-			get("/rest/rankings", "application/json", (request, response) -> {
-				Map<String, Object> page = getNewPageModel(request);
-				page.put("testData", "testtesttest}");
-				return page;
-			}, getJsonTransformer());
-		} else {
-			get("/rankings", "application/json", (request, response) -> {
-				Map<String, Object> page = getNewPageModel(request);
+		get("/rest/rankings", "application/json", (request, response) -> {
+			Map<String, Object> page = getNewPageModel(request);
+			synchronized (PlayersContainer.theDataLock) {
 				page.put("players", PlayersContainer.theDisplayPlayers);
+				page.put("error", "");
 				return page;
-			}, getJsonTransformer());
-		}
+			}
+		}, getJsonTransformer());
 	}
 
 }

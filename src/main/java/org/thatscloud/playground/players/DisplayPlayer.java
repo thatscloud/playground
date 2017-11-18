@@ -16,6 +16,8 @@ public class DisplayPlayer
     private Long myTotalGamesPlayed;
     private BigDecimal myTop10Percentage;
     private String myAvatarUrl;
+    
+    private int myPlayerRank;
 
     public String getPlayerName()
     {
@@ -136,4 +138,14 @@ public class DisplayPlayer
     {
         myAvatarUrl = avatarUrl;
     }
+
+	public int getPlayerRank() 
+	{
+		return myPlayerRank;
+	}
+
+	public void setPlayerRank(int playerRank) 
+	{
+		myPlayerRank = playerRank;
+	}
 }

@@ -1,6 +1,6 @@
-PTApp.controller('indexController', function($scope, $http, userService) {
+PTApp.controller('indexController', function($scope, $http) {
 
-	$http.get("/rest/rankings", httpConfig).success(function(response) {
-		$scope.rankings = response;
+	$http.get("/rest/rankings", httpConfig).then(function(response) {
+		$scope.players = response.data.players;
 	});
 });

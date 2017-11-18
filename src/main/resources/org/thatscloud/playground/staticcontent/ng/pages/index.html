@@ -14,8 +14,8 @@
 <script src="js/sorter.js"></script>
 
 <!--  ng -->
-<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.3/angular.min.js"></script>
-<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.3/angular-route.min.js"></script>
+<script src="https://code.angularjs.org/1.6.0/angular.min.js"></script>
+<script src="https://code.angularjs.org/1.6.0/angular-route.min.js"></script>
 
 <script src="../ng/app/PTApp.js"></script>
 <script src="../ng/controllers/indexController.js"></script>
@@ -43,27 +43,30 @@
 				</thead>
 				<tbody>
 					<!--- ng-repeat here -->
-					<tr>
-						<td>N/A or Rank</td>
-						<td><a href="https://pubgtracker.com/profile/pc/test">
+					<tr ng-repeat="player in players">
+						<td>{{player.playerRank}}</td>
+						<td><a
+							href="https://pubgtracker.com/profile/pc/{{player.playerName}}">
 								<div>
-									img
-									<!--<img alt="playername's avatar" title="playername's avatar" src="players url" />-->
+									<img alt="{{player.playerName}}&apos;s avatar"
+										title="{{player.playerName}}&apos;s avatar"
+										ng-src="{{player.avatarUrl}}" />
 								</div>
-								<div>get player name</div>
+								<div>{{player.playerName}}</div>
 						</a></td>
-						<td><strong>aggregate rating</strong></td>
-						<td><strong>solo rating</strong></td>
-						<td><strong>duo rating</strong></td>
-						<td><strong>squad rating</strong></td>
-						<td><strong>oceania solo rank</strong></td>
-						<td><strong>oceania duo rank</strong></td>
-						<td><strong>oceania squad rank</strong></td>
-						<td><strong>overall KD ratio</strong></td>
-						<td><strong>Total games played </strong></td>
-						<td><strong>top ten percentage</strong></td>
+						<td><strong>{{player.aggregateRating ==null ? 'N/A' : player.aggregateRating | number:2}}</strong></td>
+						<td><strong>{{player.soloRating ==null ? 'N/A' : player.soloRating | number:2 | strReplace:',':''}}</strong></td>
+						<td><strong>{{player.duoRating ==null ? 'N/A' : player.duoRating | number:2 | strReplace:',':''}}</strong></td>
+						<td><strong>{{player.squadRating ==null ? 'N/A' : player.squadRating | number:2 | strReplace:',':''}}</strong></td>
+						<td><strong>{{player.oceaniaSoloRank ==null ? 'N/A' : player.oceaniaSoloRank}}</strong></td>
+						<td><strong>{{player.oceaniaDuoRank ==null ? 'N/A' : player.oceaniaDuoRank}}</strong></td>
+						
+						<td><strong>{{player.oceaniaSquadRank ==null ? 'N/A' : player.oceaniaSquadRank}}</strong></td>
+						<td><strong>{{player.overallKillDeathRatio ==null ? 'N/A' : player.overallKillDeathRatio | strReplace:',':''}}</strong></td>
+						<td><strong>{{player.totalGamesPlayed ==null ? 'N/A' : player.totalGamesPlayed}}</strong></td>
+						<td><strong>{{player.top10Percentage ==null ? 'N/A' : player.top10Percentage}}</strong></td>
 					</tr>
-					<!-- end of repeat here -->
+					<!-- /ng-repeat -->
 
 				</tbody>
 			</table>

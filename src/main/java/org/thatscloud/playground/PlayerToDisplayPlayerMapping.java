@@ -45,7 +45,7 @@ public class PlayerToDisplayPlayerMapping implements Function<List<Player>, List
             findWorstModeRating( players, latestSeason, GameMode.DUO );
         final BigDecimal worstSquadRating =
             findWorstModeRating( players, latestSeason, GameMode.SQUAD );
-        return players.stream()
+        List<DisplayPlayer> playerList = players.stream()
             .map( player ->
             {
                 final DisplayPlayer displayPlayer = new DisplayPlayer();
@@ -112,6 +112,13 @@ public class PlayerToDisplayPlayerMapping implements Function<List<Player>, List
             .sorted( reversedComparator( ( p1, p2 ) -> compare( p1.getAggregateRating(),
                                                                 p2.getAggregateRating() ) ) )
             .collect( toList() );
+        
+        int rank = 1;
+        for ( DisplayPlayer player : playerList)
+        {
+        	player.setPlayerRank(rank++);
+        }
+        return playerList;
     }
 
     private Optional<String> findLatestSeason( final List<Player> players )
