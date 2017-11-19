@@ -3,74 +3,72 @@
 <head>
 <title>Playground - A PUBG Tracker</title>
 
-<link href="//fonts.googleapis.com/css?family=Nunito:300,400,600"
-	rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=Nunito:300,400,600" rel="stylesheet" type="text/css">
 <link rel="stylesheet" href="css/normalize.css">
 <link rel="stylesheet" href="css/skeleton.css">
 <link rel="stylesheet" href="css/custom.css">
 <link rel="stylesheet" href="css/tablesorter-theme.css">
 <script src="https://cdn.jsdelivr.net/jquery/3.2.1/jquery.min.js"></script>
-<script
-	src="https://cdn.jsdelivr.net/tablesorter/2.28.9/js/jquery.tablesorter.min.js"></script>
-<script src="js/sorter.js"></script>
+<script src="https://cdn.jsdelivr.net/tablesorter/2.28.9/js/jquery.tablesorter.min.js"></script>
 
 <!--  ng -->
 <script src="https://code.angularjs.org/1.6.0/angular.min.js"></script>
 <script src="https://code.angularjs.org/1.6.0/angular-route.min.js"></script>
 
-<script src="../ng/app/PTApp.js"></script>
-<script src="../ng/controllers/indexController.js"></script>
+<script src="ng/app/PTApp.js"></script>
+<script src="ng/controllers/indexController.js"></script>
+<script src="ng/directives/indexDirective.js"></script>
 </head>
 <body ng-controller="indexController">
-	<div class="section">
-		<div class="container">
-			<h1 style="text-align: center; padding-top: 20px;">Rankings</h1>
-			<table id="resultsTable" class="tablesorter">
-				<thead>
-					<tr>
-						<th class="sorter-playground-rank">Rank</th>
-						<th>Player</th>
-						<th>Overall Rating</th>
-						<th>Solo Rating</th>
-						<th>Duo Rating</th>
-						<th>Squad Rating</th>
-						<th class="sorter-playground-ordinal">OC Solo Rank</th>
-						<th class="sorter-playground-ordinal">OC Duo Rank</th>
-						<th class="sorter-playground-ordinal">OC Squad Rank</th>
-						<th>Overall K/D Ratio</th>
-						<th>Total Games Played</th>
-						<th>Top 10 Percentage</th>
-					</tr>
-				</thead>
-				<tbody>
-					<!--- ng-repeat here -->
-					<tr ng-repeat="player in players">
-						<td>{{player.playerRank}}</td>
-						<td><a
-							href="https://pubgtracker.com/profile/pc/{{player.playerName}}">
-								<div>
-									<img alt="{{player.playerName}}&apos;s avatar"
-										title="{{player.playerName}}&apos;s avatar"
-										ng-src="{{player.avatarUrl}}" />
-								</div>
-								<div>{{player.playerName}}</div>
-						</a></td>
-						<td><strong>{{player.aggregateRating ==null ? 'N/A' : player.aggregateRating | formatDecimal}}</strong></td>
-						<td><strong>{{player.soloRating ==null ? 'N/A' : player.soloRating | formatDecimal}}</strong></td>
-						<td><strong>{{player.duoRating ==null ? 'N/A' : player.duoRating | formatDecimal}}</strong></td>
-						<td><strong>{{player.squadRating ==null ? 'N/A' : player.squadRating | formatDecimal}}</strong></td>
-						<td><strong>{{player.oceaniaSoloRank ==null ? 'N/A' : player.oceaniaSoloRank |  formatOrdinal}}</strong></td>
-						<td><strong>{{player.oceaniaDuoRank ==null ? 'N/A' : player.oceaniaDuoRank | formatOrdinal}}</strong></td>
-						<td><strong>{{player.oceaniaSquadRank ==null ? 'N/A' : player.oceaniaSquadRank |  formatOrdinal}}</strong></td>
-						<td><strong>{{player.overallKillDeathRatio ==null ? 'N/A' : player.overallKillDeathRatio | formatDecimal}}</strong></td>
-						<td><strong>{{player.totalGamesPlayed ==null ? 'N/A' : player.totalGamesPlayed}}</strong></td>
-						<td><strong>{{player.top10Percentage ==null ? 'N/A' : player.top10Percentage | formatPercentage:2}}</strong></td>
-					</tr>
-					<!-- /ng-repeat -->
-				</tbody>
-			</table>
-			<p>Last Updated: {{lastUpdate}}</p>
-		</div>
-	</div>
+  <div class="section">
+    <div class="container">
+      <h1 style="text-align: center; padding-top: 20px;">Rankings</h1>
+      <table id="resultsTable" class="tablesorter">
+        <thead>
+          <tr>
+            <th class="sorter-playground-rank">Rank</th>
+            <th>Player</th>
+            <th>Overall Rating</th>
+            <th>Solo Rating</th>
+            <th>Duo Rating</th>
+            <th>Squad Rating</th>
+            <th class="sorter-playground-ordinal">OC Solo Rank</th>
+            <th class="sorter-playground-ordinal">OC Duo Rank</th>
+            <th class="sorter-playground-ordinal">OC Squad Rank</th>
+            <th>Overall K/D Ratio</th>
+            <th>Total Games Played</th>
+            <th>Top 10 Percentage</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!--- ng-repeat here -->
+          <tr ng-repeat="player in players">
+            <td>{{player.playerRank}}</td>
+            <td><a
+              href="https://pubgtracker.com/profile/pc/{{player.playerName}}">
+                <div>
+                  <img alt="{{player.playerName}}&apos;s avatar"
+                    title="{{player.playerName}}&apos;s avatar"
+                    ng-src="{{player.avatarUrl}}" />
+                </div>
+                <div>{{player.playerName}}</div>
+            </a></td>
+            <td><strong>{{player.aggregateRating ==null ? 'N/A' : player.aggregateRating | formatDecimal}}</strong></td>
+            <td><strong>{{player.soloRating ==null ? 'N/A' : player.soloRating | formatDecimal}}</strong></td>
+            <td><strong>{{player.duoRating ==null ? 'N/A' : player.duoRating | formatDecimal}}</strong></td>
+            <td><strong>{{player.squadRating ==null ? 'N/A' : player.squadRating | formatDecimal}}</strong></td>
+            <td><strong>{{player.oceaniaSoloRank ==null ? 'N/A' : player.oceaniaSoloRank |  formatOrdinal}}</strong></td>
+            <td><strong>{{player.oceaniaDuoRank ==null ? 'N/A' : player.oceaniaDuoRank | formatOrdinal}}</strong></td>
+            <td><strong>{{player.oceaniaSquadRank ==null ? 'N/A' : player.oceaniaSquadRank |  formatOrdinal}}</strong></td>
+            <td><strong>{{player.overallKillDeathRatio ==null ? 'N/A' : player.overallKillDeathRatio | formatDecimal}}</strong></td>
+            <td><strong>{{player.totalGamesPlayed ==null ? 'N/A' : player.totalGamesPlayed}}</strong></td>
+            <td><strong>{{player.top10Percentage ==null ? 'N/A' : player.top10Percentage | formatPercentage:2}}</strong></td>
+          </tr>
+          <!-- /ng-repeat -->
+        </tbody>
+      </table>
+      <p>Last Updated: {{lastUpdate}}</p>
+    </div>
+  </div>
 </body>
 </html>

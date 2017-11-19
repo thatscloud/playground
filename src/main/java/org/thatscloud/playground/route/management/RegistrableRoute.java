@@ -15,41 +15,41 @@ import spark.Route;
 
 public abstract class RegistrableRoute implements Route
 {
-	private final JsonTransformer jsonTransformer = new JsonTransformer();
-	
+    private final JsonTransformer jsonTransformer = new JsonTransformer();
+
     public RegistrableRoute(  )
     {
     }
-    
+
     public JsonTransformer getJsonTransformer()
     {
         return jsonTransformer;
     }
 
     @Override
-    public Object handle( Request request, Response response ) throws Exception
+    public Object handle( final Request request, final Response response ) throws Exception
     {
         response.redirect( getFullUrl( request, "/404" ) );
         return response.raw();
     }
 
-    protected String getFullUrl( Request request, String path )
+    protected String getFullUrl( final Request request, final String path )
     {
-        StringBuilder builder = new StringBuilder( request.host() );
+        final StringBuilder builder = new StringBuilder( request.host() );
         builder.insert( 0, "http://" );
         builder.append( path );
         return builder.toString();
     }
 
-    protected Map<String, Object> getNewPageModel( Request request ) throws SQLException
+    protected Map<String, Object> getNewPageModel( final Request request ) throws SQLException
     {
-        Map<String, Object> page = new HashMap<>();
+        final Map<String, Object> page = new HashMap<>();
         return page;
     }
 
     public abstract void register();
 
-    
+
     //Helper methods for routes
     protected static String formatDecimal( final BigDecimal bd )
     {
