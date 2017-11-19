@@ -44,23 +44,23 @@ import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 
 public class Main
 {
-	public static final Logger theLogger = LoggerFactory.getLogger( Main.class );
+    public static final Logger theLogger = LoggerFactory.getLogger( Main.class );
     private static final long SLEEP_TIME_BETWEEN_API_READS_IN_MILLISECONDS = 1000;
     private static final long SLEEP_TIME_BETWEEN_UPDATE_CYCLES_IN_MILLISECONDS = 15 * 60 * 1000;
 
     public static void main( final String[] args )
     {
-    	init();
-    	
-    	buildDataGatherThread();
-    	
-    	RouteManager.insertRoutes();
-    	
-    	RouteManager.registerStaticContent();
+        init();
+
+        buildDataGatherThread();
+
+        RouteManager.insertRoutes();
+
+        RouteManager.registerStaticContent();
     }
 
-	private static void init() {
-		try
+    private static void init() {
+        try
         {
             final URI uri = Main.class.getClassLoader().getResource(
                                  "org/thatscloud/playground/Main.class" ).toURI();
@@ -82,8 +82,8 @@ public class Main
         {
             throw new RuntimeException( e );
         }
-		
-		port( 6789 );
+
+        port( 6789 );
         before( ( req, res ) ->
         {
             res.raw().setCharacterEncoding( StandardCharsets.UTF_8.toString() );
@@ -100,11 +100,11 @@ public class Main
                 res.raw().setContentType( "text/html; charset=utf-8" );
             }
         } );
-	}
+    }
 
-	private static void buildDataGatherThread() {
-		
-		final Thread t = new Thread( (Runnable)() ->
+    private static void buildDataGatherThread() {
+
+        final Thread t = new Thread( (Runnable)() ->
         {
             try
             {
@@ -247,8 +247,8 @@ public class Main
                     {
                         synchronized( PlayersContainer.theDataLock )
                         {
-                        	PlayersContainer.theDisplayPlayers.clear();
-                        	PlayersContainer.theDisplayPlayers.addAll( newDisplayPlayers );
+                            PlayersContainer.theDisplayPlayers.clear();
+                            PlayersContainer.theDisplayPlayers.addAll( newDisplayPlayers );
                             PlayersContainer.theLastUpdateInstant.setValue( Instant.now() );
                         }
                     }
@@ -259,6 +259,6 @@ public class Main
         } );
         t.setDaemon( true );
         t.start();
-	}
-	
+    }
+
 }

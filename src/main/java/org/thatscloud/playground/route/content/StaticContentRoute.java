@@ -29,7 +29,7 @@ public class StaticContentRoute extends RegistrableRoute
     public Object handle( final Request request,
                           final Response response ) throws Exception
     {
-    	final String uriString;
+        final String uriString;
         if( request.splat() == null ||
             request.splat().length == 0 )
         {

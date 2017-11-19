@@ -11,41 +11,41 @@ import org.thatscloud.playground.route.content.StaticContentRoute;
 
 public class RouteManager
 {
-	private static final Logger theLogger = LoggerFactory.getLogger( Main.class );
-	
+    private static final Logger theLogger = LoggerFactory.getLogger( Main.class );
+
     public static void insertRoutes(  )
     {
-        Reflections[] routePaths = {
+        final Reflections[] routePaths = {
         new Reflections( "org.thatscloud.playground.route.content" ),
         new Reflections( "org.thatscloud.playground.route.rest" )};
 
-        for( Reflections reflections : routePaths)
+        for( final Reflections reflections : routePaths)
         {
-	        try
-	        {
-	            Set<Class<? extends RegistrableRoute>> allClasses = reflections
-	                .getSubTypesOf( RegistrableRoute.class );
-	
-	            allClasses.remove( StaticContentRoute.class );
-	            for ( Class<? extends RegistrableRoute> clazz : allClasses )
-	            {
-	                clazz.getConstructor()
-	                    .newInstance( ).register();
-	                theLogger.info( "Route Registered: " + clazz.getName() );
-	            }
-	
-	        }
-	        catch ( Exception e )
-	        {
-	            throw new RuntimeException( "Couldn't register all routes.", e );
-	        }
+            try
+            {
+                final Set<Class<? extends RegistrableRoute>> allClasses = reflections
+                    .getSubTypesOf( RegistrableRoute.class );
+
+                allClasses.remove( StaticContentRoute.class );
+                for ( final Class<? extends RegistrableRoute> clazz : allClasses )
+                {
+                    clazz.getConstructor()
+                        .newInstance( ).register();
+                    theLogger.info( "Route Registered: " + clazz.getName() );
+                }
+
+            }
+            catch ( final Exception e )
+            {
+                throw new RuntimeException( "Couldn't register all routes.", e );
+            }
         }
 
     }
 
     public static void registerStaticContent()
     {
-    	theLogger.info( "Registering Static Content Route (this must be done last)." );
+        theLogger.info( "Registering Static Content Route (this must be done last)." );
         new StaticContentRoute().register();
         theLogger.info( "Route Registered: " + StaticContentRoute.class.getName() );
 
