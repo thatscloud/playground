@@ -9,7 +9,8 @@ PTApp.config(function($routeProvider) {
      })
      .otherwise(
      {
-    	 templateUrl: 'ng/pages/404.html'
+    	 templateUrl: 'ng/pages/404.html',
+    	 controller: null
      });
  });
 
