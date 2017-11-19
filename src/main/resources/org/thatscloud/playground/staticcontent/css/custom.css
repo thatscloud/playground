@@ -1,19 +1,16 @@
-﻿body {
-    background-color: #FFFFFF;
-    color: #333333;
-    font-size: 1.3em;
-    color: #FFFFFF;
+body {
+    font-size: 1.4em;
     background-image: url(/media/index_background.png);
     background-size:cover;
-    
+    color: #FFFFFF;
 }
 
 table {
 	padding:2px 6px 4px 6px; 
-	color: #BBBBBB; 
-	background-color: #333333;
-	opacity: 0.75;
-    filter: alpha(opacity=75);
+	color: #ffffff;
+	background-color: #000000;
+	opacity: 0.45;
+    filter: alpha(opacity=45);
 }
 
 table th:nth-child(3),
