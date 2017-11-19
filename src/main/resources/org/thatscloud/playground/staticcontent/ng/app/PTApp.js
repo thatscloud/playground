@@ -7,13 +7,9 @@ PTApp.config(function($routeProvider) {
     	 templateUrl: 'ng/pages/index.html',
          controller: 'indexController'
      })
-     .when('/queues', {
-         templateUrl: 'ng/pages/index.html',
-         controller: 'indexController'
-     })
      .otherwise(
      {
-    	 templateUrl: '404.html',
+    	 templateUrl: 'ng/pages/404.html'
      });
  });
 
