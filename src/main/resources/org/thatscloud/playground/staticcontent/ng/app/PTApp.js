@@ -34,7 +34,7 @@ PTApp.filter('formatOrdinal', function ($filter) {
 	return function(input) {
 		   var s=["th","st","nd","rd"],
 		       v=input%100;
-		   return input+(s[(v-20)%10]||s[v]||s[0]);
+		   return isNaN(input) ? input : $filter('number')(input,0) +(s[(v-20)%10]||s[v]||s[0]);
 		}
 });
 
