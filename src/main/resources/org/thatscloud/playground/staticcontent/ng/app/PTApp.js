@@ -26,11 +26,26 @@ PTApp.filter('strReplace', function () {
 	  };
 	});
 
-PTApp.filter('formatDecimal', function () {
+PTApp.filter('formatDecimal', function ($filter) {
 	  return function (input) {
-	    val = isNaN(input) ? input : sprintf( "%.2f", input );
+	    return isNaN(input) ? input : $filter('strReplace')($filter('number')(input,2),',','');
+	    		
 	  };
 	});
  
- var httpConfig = {headers: {'Accept': 'application/json;odata=verbose'}};
+PTApp.filter('formatOrdinal', function ($filter) {
+	return function(input) {
+		   var s=["th","st","nd","rd"],
+		       v=input%100;
+		   return input+(s[(v-20)%10]||s[v]||s[0]);
+		}
+});
+
+PTApp.filter('formatPercentage', ['$filter', function ($filter) {
+	  return function (input, decimals) {
+	    return $filter('number')(input * 100, decimals) + '%';
+	  };
+	}]);
+
+var httpConfig = {headers: {'Accept': 'application/json;odata=verbose'}};
  

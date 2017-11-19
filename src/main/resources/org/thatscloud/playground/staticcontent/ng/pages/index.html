@@ -54,17 +54,16 @@
 								</div>
 								<div>{{player.playerName}}</div>
 						</a></td>
-						<td><strong>{{player.aggregateRating ==null ? 'N/A' : player.aggregateRating | number:2}}</strong></td>
-						<td><strong>{{player.soloRating ==null ? 'N/A' : player.soloRating | number:2 | strReplace:',':''}}</strong></td>
-						<td><strong>{{player.duoRating ==null ? 'N/A' : player.duoRating | number:2 | strReplace:',':''}}</strong></td>
-						<td><strong>{{player.squadRating ==null ? 'N/A' : player.squadRating | number:2 | strReplace:',':''}}</strong></td>
-						<td><strong>{{player.oceaniaSoloRank ==null ? 'N/A' : player.oceaniaSoloRank}}</strong></td>
-						<td><strong>{{player.oceaniaDuoRank ==null ? 'N/A' : player.oceaniaDuoRank}}</strong></td>
-						
-						<td><strong>{{player.oceaniaSquadRank ==null ? 'N/A' : player.oceaniaSquadRank}}</strong></td>
-						<td><strong>{{player.overallKillDeathRatio ==null ? 'N/A' : player.overallKillDeathRatio | strReplace:',':''}}</strong></td>
+						<td><strong>{{player.aggregateRating ==null ? 'N/A' : player.aggregateRating | formatDecimal}}</strong></td>
+						<td><strong>{{player.soloRating ==null ? 'N/A' : player.soloRating | formatDecimal}}</strong></td>
+						<td><strong>{{player.duoRating ==null ? 'N/A' : player.duoRating | formatDecimal}}</strong></td>
+						<td><strong>{{player.squadRating ==null ? 'N/A' : player.squadRating | formatDecimal}}</strong></td>
+						<td><strong>{{player.oceaniaSoloRank ==null ? 'N/A' : player.oceaniaSoloRank | number:0 |  formatOrdinal}}</strong></td>
+						<td><strong>{{player.oceaniaDuoRank ==null ? 'N/A' : player.oceaniaDuoRank | number:0 | formatOrdinal}}</strong></td>
+						<td><strong>{{player.oceaniaSquadRank ==null ? 'N/A' : player.oceaniaSquadRank | number:0 |  formatOrdinal}}</strong></td>
+						<td><strong>{{player.overallKillDeathRatio ==null ? 'N/A' : player.overallKillDeathRatio | formatDecimal}}</strong></td>
 						<td><strong>{{player.totalGamesPlayed ==null ? 'N/A' : player.totalGamesPlayed}}</strong></td>
-						<td><strong>{{player.top10Percentage ==null ? 'N/A' : player.top10Percentage}}</strong></td>
+						<td><strong>{{player.top10Percentage ==null ? 'N/A' : player.top10Percentage | formatPercentage:2}}</strong></td>
 					</tr>
 					<!-- /ng-repeat -->
 
