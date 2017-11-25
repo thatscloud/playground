@@ -12,12 +12,6 @@ import org.thatscloud.playground.route.management.RegistrableRoute;
 public class RankingsRestRoute extends RegistrableRoute
 {
 
-    boolean test = true;
-
-    public RankingsRestRoute()
-    {
-    }
-
     @Override
     public void register()
     {

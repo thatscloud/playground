@@ -12,7 +12,6 @@ PTApp.directive('tablesorter', function( $timeout ) {
                 scope.$watch( 
                     "players",
                     function() {
-                        console.log( "ng watch applied to table" );
                         $timeout( function() {
                             $( "#resultsTable" ).trigger( "update" );
                         } );

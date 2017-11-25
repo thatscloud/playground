@@ -3,15 +3,10 @@ var PTApp = angular.module("PTApp",[
  ]);
 
 PTApp.config(function($routeProvider) {
-     $routeProvider.when('/', {
+     $routeProvider.when('/index', {
          templateUrl: 'ng/pages/index.html',
          controller: 'indexController'
      })
-     .otherwise(
-     {
-         templateUrl: 'ng/pages/404.html',
-         controller: null
-     });
  });
 
 PTApp.filter('strReplace', function () {
@@ -80,5 +75,4 @@ PTApp.run( function() {
     } );
 });
 
-var httpConfig = {headers: {'Accept': 'application/json;odata=verbose'}};
- 
+var httpConfig = {headers: {'Accept': 'application/json'}};

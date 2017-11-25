@@ -20,11 +20,6 @@ import spark.utils.IOUtils;
 public class StaticContentRoute extends RegistrableRoute
 {
 
-    public StaticContentRoute(  )
-    {
-        super( );
-    }
-
     @Override
     public Object handle( final Request request,
                           final Response response ) throws Exception
