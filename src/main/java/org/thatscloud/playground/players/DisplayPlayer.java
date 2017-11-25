@@ -1,4 +1,4 @@
-package org.thatscloud.playground;
+package org.thatscloud.playground.players;
 
 import java.math.BigDecimal;
 
@@ -16,6 +16,8 @@ public class DisplayPlayer
     private Long myTotalGamesPlayed;
     private BigDecimal myTop10Percentage;
     private String myAvatarUrl;
+
+    private int myPlayerRank;
 
     public String getPlayerName()
     {
@@ -135,5 +137,15 @@ public class DisplayPlayer
     public void setAvatarUrl( final String avatarUrl )
     {
         myAvatarUrl = avatarUrl;
+    }
+
+    public int getPlayerRank()
+    {
+        return myPlayerRank;
+    }
+
+    public void setPlayerRank(final int playerRank)
+    {
+        myPlayerRank = playerRank;
     }
 }

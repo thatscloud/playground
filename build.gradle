@@ -14,6 +14,7 @@ dependencies {
     compile 'com.sparkjava:spark-core:2.6.0'
     compile 'org.apache.commons:commons-lang3:3.5' 
     compile 'commons-io:commons-io:2.4'
+    compile 'org.reflections:reflections:0.9.10'
     compile 'org.apache.commons:commons-collections4:4.1'
     compile 'com.fasterxml.jackson.core:jackson-databind:2.8.8.1'
     compile 'com.fasterxml.jackson.module:jackson-module-parameter-names:2.8.8'

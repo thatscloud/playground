@@ -1,7 +1,16 @@
-﻿body {
-    background-color: #FFFFFF;
-    color: #333333;
-    font-size: 1.3em;
+body {
+    font-size: 1.4em;
+    background-image: url(/media/index_background.jpg);
+    background-size:cover;
+    color: #FFFFFF;
+}
+
+table {
+	padding:2px 6px 4px 6px; 
+	color: #ffffff;
+	background-color: #000000;
+	opacity: 0.45;
+    filter: alpha(opacity=45);
 }
 
 table th:nth-child(3),
@@ -15,4 +24,6 @@ table td:nth-child(9) {
 
 th, td {
     padding: 12px 10px; 
+    opacity: 1.0;
+    filter: alpha(opacity=100);
 }
