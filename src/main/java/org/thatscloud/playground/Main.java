@@ -1,20 +1,17 @@
 package org.thatscloud.playground;
 
-import static com.fasterxml.jackson.databind.DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonMap;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 import static org.apache.commons.io.FileUtils.readFileToString;
-import static org.glassfish.jersey.CommonProperties.FEATURE_AUTO_DISCOVERY_DISABLE;
-import static org.glassfish.jersey.CommonProperties.JSON_PROCESSING_FEATURE_DISABLE;
-import static org.glassfish.jersey.CommonProperties.METAINF_SERVICES_LOOKUP_DISABLE;
 import static spark.Spark.before;
 import static spark.Spark.port;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
@@ -24,23 +21,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.thatscloud.playground.players.DisplayPlayer;
 import org.thatscloud.playground.players.PlayersContainer;
-import org.thatscloud.playground.rest.model.GameModeStatistics;
-import org.thatscloud.playground.rest.model.Player;
-import org.thatscloud.playground.rest.model.Statistic;
 import org.thatscloud.playground.route.management.RouteManager;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
-import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
+import org.thatscloud.pubj.Pubg;
+import org.thatscloud.pubj.rest.model.Player;
 
 public class Main
 {
@@ -104,30 +93,28 @@ public class Main
 
     private static void buildDataGatherThread() {
 
+        final String apiKey;
+        try
+        {
+            apiKey = readFileToString( new File( "auth.txt" ) ).trim();
+        }
+        catch( final FileNotFoundException e )
+        {
+            theLogger.error( "Could not find file " + new File( "auth.txt" ), e );
+            throw new UncheckedIOException( e );
+        }
+        catch( final IOException e )
+        {
+            theLogger.error( "Error reading file " + new File( "auth.txt" ), e );
+            throw new UncheckedIOException( e );
+        }
+
         final Thread t = new Thread( (Runnable)() ->
         {
-            try
+            try( final Pubg pubg = new Pubg( apiKey ) )
             {
                 while( true )
                 {
-                    final String apiKey;
-                    try
-                    {
-                        apiKey = readFileToString( new File( "auth.txt" ) ).trim();
-                    }
-                    catch( final FileNotFoundException e )
-                    {
-                        theLogger.error( "Could not find file " + new File( "auth.txt" ) );
-                        Thread.sleep( SLEEP_TIME_BETWEEN_UPDATE_CYCLES_IN_MILLISECONDS );
-                        continue;
-                    }
-                    catch( final IOException e )
-                    {
-                        theLogger.error( "Error reading file " + new File( "auth.txt" ), e );
-                        Thread.sleep( SLEEP_TIME_BETWEEN_UPDATE_CYCLES_IN_MILLISECONDS );
-                        continue;
-                    }
-
                     final List<String> playerNames;
                     try
                     {
@@ -155,30 +142,10 @@ public class Main
                     final List<Player> players = new ArrayList<>();
                     for( final String playerName : playerNames )
                     {
-                        Client client = null;
+                        final Client client = null;
                         try
                         {
-                            client = ClientBuilder.newClient();
-                            final Player player =
-                                client
-                                    .property( FEATURE_AUTO_DISCOVERY_DISABLE, true )
-                                    .property( JSON_PROCESSING_FEATURE_DISABLE, true )
-                                    .property( METAINF_SERVICES_LOOKUP_DISABLE, true )
-                                    .register(
-                                        new JacksonJsonProvider(
-                                            new ObjectMapper()
-                                                .registerModule( new ParameterNamesModule() )
-                                                .registerModule( new Jdk8Module() )
-                                                .registerModule( new JavaTimeModule() )
-                                                .configure( READ_UNKNOWN_ENUM_VALUES_AS_NULL,
-                                                            true ) ) )
-                                    .target( "https://pubgtracker.com/api" )
-                                    .path( "profile" )
-                                    .path( "pc" )
-                                    .path( playerName )
-                                    .request()
-                                    .header( "TRN-Api-Key", apiKey )
-                                    .get( Player.class );
+                            final Player player = pubg.getPlayer( playerName );
                             if( player.get( "error" ) != null )
                             {
                                 theLogger.error(
@@ -201,43 +168,6 @@ public class Main
                             {
                                 client.close();
                             }
-                        }
-                        Thread.sleep( SLEEP_TIME_BETWEEN_API_READS_IN_MILLISECONDS );
-                    }
-
-                    // Check for unknown properties
-                    for( final Player player : players )
-                    {
-                        final String playerName = player.getPlayerName();
-                        if( player.hasUnknownProperties() )
-                        {
-                            theLogger.warn( "player[\"" + playerName + "\"] has unknown " +
-                                            "properties: " +
-                                            player.unknownProperties() );
-                        }
-                        int gmsCounter = 0;
-                        for( final GameModeStatistics gms : player.getStatistics().values() )
-                        {
-                            if( gms.hasUnknownProperties() )
-                            {
-                                theLogger.warn( "player[\"" + playerName + "\"].Stats[" +
-                                                gmsCounter + "] has unknown " +
-                                                "properties: " +
-                                                gms.unknownProperties() );
-                            }
-                            int statCounter = 0;
-                            for( final Statistic stat : gms.getStatistics().values() )
-                            {
-                                if( stat.hasUnknownProperties() )
-                                {
-                                    theLogger.warn( "player[\"" + playerName + "\"].Stats[" +
-                                                    gmsCounter + "].Stats[" + statCounter  +
-                                                    "] has unknown properties: " +
-                                                    stat.unknownProperties() );
-                                }
-                                statCounter++;
-                            }
-                            gmsCounter++;
                         }
                     }
 

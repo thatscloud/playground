@@ -4,11 +4,13 @@ import static java.util.stream.Collectors.toList;
 import static org.apache.commons.collections4.ComparatorUtils.reversedComparator;
 import static org.apache.commons.lang3.ObjectUtils.compare;
 import static org.apache.commons.lang3.StringUtils.compareIgnoreCase;
+import static org.thatscloud.pubj.rest.model.constant.Mode.DUO;
+import static org.thatscloud.pubj.rest.model.constant.Mode.SOLO;
+import static org.thatscloud.pubj.rest.model.constant.Mode.SQUAD;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -19,13 +21,13 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.thatscloud.playground.players.DisplayPlayer;
-import org.thatscloud.playground.rest.model.GameModeStatistics;
-import org.thatscloud.playground.rest.model.GameModeStatisticsKey;
-import org.thatscloud.playground.rest.model.Player;
-import org.thatscloud.playground.rest.model.Statistic;
-import org.thatscloud.playground.rest.model.constant.GameMode;
-import org.thatscloud.playground.rest.model.constant.Region;
-import org.thatscloud.playground.rest.model.constant.StatisticField;
+import org.thatscloud.pubj.rest.model.Player;
+import org.thatscloud.pubj.rest.model.RegionSeasonModeStats;
+import org.thatscloud.pubj.rest.model.RegionSeasonModeStatsKey;
+import org.thatscloud.pubj.rest.model.Stat;
+import org.thatscloud.pubj.rest.model.constant.Mode;
+import org.thatscloud.pubj.rest.model.constant.Region;
+import org.thatscloud.pubj.rest.model.constant.StatField;
 
 
 public class PlayerToDisplayPlayerMapping implements Function<List<Player>, List<DisplayPlayer>>
@@ -33,54 +35,45 @@ public class PlayerToDisplayPlayerMapping implements Function<List<Player>, List
     @Override
     public List<DisplayPlayer> apply( final List<Player> players )
     {
-        final Optional<String> latestSeasonOpt = findLatestSeason( players );
-        if( !latestSeasonOpt.isPresent() )
-        {
-            return Collections.emptyList();
-        }
-        final String latestSeason = latestSeasonOpt.get();
+        final String currentSeason =
+            findLatestSeason( players ).orElse( "2017-pre5" );
         final BigDecimal worstSoloRating =
-            findWorstModeRating( players, latestSeason, GameMode.SOLO );
+            findWorstModeRating( players, currentSeason, SOLO );
         final BigDecimal worstDuoRating =
-            findWorstModeRating( players, latestSeason, GameMode.DUO );
+            findWorstModeRating( players, currentSeason, DUO );
         final BigDecimal worstSquadRating =
-            findWorstModeRating( players, latestSeason, GameMode.SQUAD );
+            findWorstModeRating( players, currentSeason, SQUAD );
         final List<DisplayPlayer> playerList = players.stream()
             .map( player ->
             {
                 final DisplayPlayer displayPlayer = new DisplayPlayer();
-                displayPlayer.setPlayerName( player.getPlayerName() );
+                displayPlayer.setPlayerName( player.getNickname() );
                 displayPlayer.setTotalGamesPlayed( 0L );
-                displayPlayer.setAvatarUrl( player.getAvatarUrl() );
-                final String defaultSeason = player.getDefaultSeason();
-                if( !Objects.equals( player.getDefaultSeason(), latestSeason ) )
-                {
-                    return displayPlayer;
-                }
+                displayPlayer.setAvatarUrl( player.getAvatar() );
 
                 displayPlayer.setSoloRating(
-                    getGameModeRating( player, GameMode.SOLO, defaultSeason ) );
+                    getGameModeRating( player, SOLO, currentSeason ) );
                 displayPlayer.setDuoRating(
-                    getGameModeRating( player, GameMode.DUO, defaultSeason ) );
+                    getGameModeRating( player, DUO, currentSeason ) );
                 displayPlayer.setSquadRating(
-                    getGameModeRating( player, GameMode.SQUAD, defaultSeason ) );
+                    getGameModeRating( player, SQUAD, currentSeason ) );
                 displayPlayer.setOceaniaSoloRank(
-                    getGameModeRank( player, GameMode.SOLO, defaultSeason ) );
+                    getGameModeRank( player, SOLO, currentSeason ) );
                 displayPlayer.setOceaniaDuoRank(
-                    getGameModeRank( player, GameMode.DUO, defaultSeason ) );
+                    getGameModeRank( player, DUO, currentSeason ) );
                 displayPlayer.setOceaniaSquadRank(
-                    getGameModeRank( player, GameMode.SQUAD, defaultSeason ) );
+                    getGameModeRank( player, SQUAD, currentSeason ) );
 
                 final long totalTop10s =
-                    getIntegerStatisticTotal( player, StatisticField.TOP_10S, defaultSeason );
+                    getIntegerStatisticTotal( player, StatField.TOP_10S, currentSeason );
                 final long totalKills =
-                    getIntegerStatisticTotal( player, StatisticField.KILLS, defaultSeason );
+                    getIntegerStatisticTotal( player, StatField.KILLS, currentSeason );
                 final Long totalDeaths =
-                    calculateTotalDeaths( player, defaultSeason );
+                    calculateTotalDeaths( player, currentSeason );
                 displayPlayer.setTotalGamesPlayed(
                     getIntegerStatisticTotal( player,
-                                              StatisticField.ROUNDS_PLAYED,
-                                              defaultSeason ) );
+                                              StatField.ROUNDS_PLAYED,
+                                              currentSeason ) );
 
                 displayPlayer.setAggregateRating( calculateAggregateRating( displayPlayer,
                                                                             worstSoloRating,
@@ -121,53 +114,50 @@ public class PlayerToDisplayPlayerMapping implements Function<List<Player>, List
         return playerList;
     }
 
-    private Optional<String> findLatestSeason( final List<Player> players )
-    {
-        final SortedSet<String> seasons = new TreeSet<>();
-        for( final Player player : players )
-        {
-            seasons.add( player.getDefaultSeason() );
-        }
-        return seasons.isEmpty() ? Optional.empty() : Optional.of( seasons.last() );
-    }
-
     private BigDecimal findWorstModeRating( final List<Player> players,
                                             final String currentSeason,
-                                            final GameMode gameMode )
+                                            final Mode gameMode )
     {
         return players.stream()
-            .map( Player::getStatistics )
-            .map( gms -> gms.get( new GameModeStatisticsKey( Region.AGGREGATE,
-                                                             currentSeason,
-                                                             gameMode ) ) )
+            .map( Player::getStats )
+            .map( rsms -> rsms.get( new RegionSeasonModeStatsKey( Region.AGGREGATE,
+                                                                  currentSeason,
+                                                                  gameMode ) ) )
             .filter( Objects::nonNull )
-            .map( GameModeStatistics::getStatistics )
-            .map( stats -> stats.get( StatisticField.RATING ) )
+            .map( RegionSeasonModeStats::getStats )
+            .map( stats -> stats.get( StatField.RATING ) )
             .filter( Objects::nonNull )
-            .map( Statistic::getValueDecimal )
+            .map( Stat::getValueDec )
             .sorted()
             .filter( value -> value.compareTo( BigDecimal.ZERO ) != 0 )
             .findFirst()
             .orElse( BigDecimal.ONE );
     }
 
-    private Long calculateTotalDeaths( final Player player, final String defaultSeason )
+    private Long calculateTotalDeaths( final Player player, final String currentSeason )
     {
-        return Arrays.stream( GameMode.values() )
-            .map( gm ->
+        return Arrays.stream( Mode.values() )
+            .map( mode ->
                 Optional.of( player )
-                    .map( Player::getStatistics )
-                    .map( gms -> gms.get( new GameModeStatisticsKey( Region.AGGREGATE,
-                                                                     defaultSeason,
-                                                                     gm ) ) )
+                    .map( Player::getStats )
+                    .map( rsms -> rsms.get( new RegionSeasonModeStatsKey( Region.AGGREGATE,
+                                                                          currentSeason,
+                                                                          mode ) ) )
                     .orElse( null ) )
             .filter( Objects::nonNull )
-            .map( GameModeStatistics::getStatistics )
+            .map( RegionSeasonModeStats::getStats )
             .map( stats ->
             {
-                final Long kills = stats.get( StatisticField.KILLS ).getValueInteger();
+                final Long kills =
+                    Optional.of( stats )
+                        .map( s -> s.get( StatField.KILLS ) )
+                        .map( Stat::getValueInt )
+                        .orElse( null );
                 final BigDecimal killDeathRatio =
-                    stats.get( StatisticField.KILL_DEATH_RATIO ).getValueDecimal();
+                    Optional.of( stats )
+                        .map( s -> s.get( StatField.KILL_DEATH_RATIO ) )
+                        .map( Stat::getValueDec )
+                        .orElse( null );
                 if( kills != null &&
                     killDeathRatio != null &&
                     BigDecimal.ZERO.compareTo( killDeathRatio ) != 0 )
@@ -179,9 +169,16 @@ public class PlayerToDisplayPlayerMapping implements Function<List<Player>, List
                         .longValue();
                 }
 
-                final Long wins = stats.get( StatisticField.WINS ).getValueInteger();
+                final Long wins =
+                    Optional.of( stats )
+                        .map( s -> s.get( StatField.WINS ) )
+                        .map( Stat::getValueInt )
+                        .orElse( null );
                 final Long roundsPlayed =
-                    stats.get( StatisticField.ROUNDS_PLAYED ).getValueInteger();
+                    Optional.of( stats )
+                        .map( s -> s.get( StatField.ROUNDS_PLAYED ) )
+                        .map( Stat::getValueInt )
+                        .orElse( null );
                 if( wins != null && roundsPlayed != null )
                 {
                     // This is not technically true
@@ -223,51 +220,56 @@ public class PlayerToDisplayPlayerMapping implements Function<List<Player>, List
     }
 
     private BigDecimal getGameModeRating( final Player player,
-                                          final GameMode gameMode,
-                                          final String defaultSeason )
+                                          final Mode mode,
+                                          final String currentSeason )
     {
         return Optional.of( player )
-            .map( Player::getStatistics )
-            .map( gms -> gms.get( new GameModeStatisticsKey( Region.AGGREGATE,
-                                                             defaultSeason,
-                                                             gameMode ) ) )
-            .map( GameModeStatistics::getStatistics )
-            .map( stats -> stats.get( StatisticField.RATING ) )
-            .map( Statistic::getValueDecimal )
+            .map( Player::getStats )
+            .map( rsms -> rsms.get( new RegionSeasonModeStatsKey( Region.AGGREGATE,
+                                                                  currentSeason,
+                                                                  mode ) ) )
+            .map( RegionSeasonModeStats::getStats )
+            .map( stats -> stats.get( StatField.RATING ) )
+            .filter( Objects::nonNull )
+            .map( Stat::getValueDec )
+            .filter( Objects::nonNull )
             .orElse( null );
     }
 
     private Long getGameModeRank( final Player player,
-                                  final GameMode gameMode,
+                                  final Mode mode,
                                   final String defaultSeason )
     {
         return Optional.of( player )
-            .map( Player::getStatistics )
-            .map( gms -> gms.get( new GameModeStatisticsKey( Region.OCEANIA,
-                                                             defaultSeason,
-                                                             gameMode ) ) )
-            .map( GameModeStatistics::getStatistics )
-            .map( stats -> stats.get( StatisticField.RATING ) )
-            .map( Statistic::getRank )
+            .map( Player::getStats )
+            .map( rsms -> rsms.get( new RegionSeasonModeStatsKey( Region.OCEANIA,
+                                                                  defaultSeason,
+                                                                  mode ) ) )
+            .map( RegionSeasonModeStats::getStats )
+            .map( stats -> stats.get( StatField.RATING ) )
+            .filter( Objects::nonNull )
+            .map( Stat::getRank )
+            .filter( Objects::nonNull )
             .orElse( null );
     }
 
     private Long getIntegerStatisticTotal( final Player player,
-                                           final StatisticField statisticField,
-                                           final String defaultSeason )
+                                           final StatField statisticField,
+                                           final String currentSeason )
     {
-        return Arrays.stream( GameMode.values() )
-            .map( gm ->
+        return Arrays.stream( Mode.values() )
+            .map( mode ->
                 Optional.of( player )
-                .map( Player::getStatistics )
-                .map( gms -> gms.get( new GameModeStatisticsKey( Region.AGGREGATE,
-                                                                 defaultSeason,
-                                                                 gm ) ) )
+                .map( Player::getStats )
+                .map( rsms -> rsms.get( new RegionSeasonModeStatsKey( Region.AGGREGATE,
+                                                                      currentSeason,
+                                                                      mode ) ) )
                 .orElse( null ) )
             .filter( Objects::nonNull )
-            .map( GameModeStatistics::getStatistics )
+            .map( RegionSeasonModeStats::getStats )
             .map( stats -> stats.get( statisticField ) )
-            .map( Statistic::getValueInteger )
+            .filter( Objects::nonNull )
+            .map( Stat::getValueInt )
             .filter( Objects::nonNull )
             .collect( Collectors.summingLong( Long::longValue ) );
     }
@@ -307,4 +309,16 @@ public class PlayerToDisplayPlayerMapping implements Function<List<Player>, List
             2,
             RoundingMode.HALF_UP );
     }
+
+    private Optional<String> findLatestSeason( final List<Player> players )
+    {
+        final SortedSet<String> seasons = new TreeSet<>();
+        players.stream()
+            .flatMap( p -> p.getStats().values().stream() )
+            .map( rsms -> rsms.getSeason() )
+            .forEach( seasons::add );
+        return seasons.isEmpty() ? Optional.empty() : Optional.of( seasons.last() );
+    }
+
+
 }
